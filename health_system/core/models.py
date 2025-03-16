@@ -76,3 +76,34 @@ class CoachReview(models.Model):
 
     def __str__(self):
         return f"Review by {self.coach.user.username} for {self.user.user.username}"
+    
+
+class WellnessCoachFeedback(models.Model):
+    coach = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        limit_choices_to={'groups__name': "Wellness Coach"},
+        related_name="coach_feedbacks"  # Unique related name for coach
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="user_feedbacks"  # Unique related name for user
+    )
+    bmi_update = models.ForeignKey(WeeklyUpdate, on_delete=models.CASCADE, null=True, blank=True)
+    food_log = models.ForeignKey(DailyFoodLog, on_delete=models.CASCADE, null=True, blank=True)
+    rating = models.IntegerField(choices=[(1, 'Poor'), (2, 'Average'), (3, 'Good'), (4, 'Excellent')], default=3)
+    recommendation = models.CharField(
+        max_length=255,
+        choices=[
+            ('Increase Protein', 'Increase Protein'),
+            ('Reduce Sugar', 'Reduce Sugar'),
+            ('Improve Hydration', 'Improve Hydration'),
+            ('More Vegetables', 'More Vegetables'),
+            ('Balanced Diet', 'Balanced Diet'),
+        ]
+    )
+    date_provided = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback by {self.coach.username} for {self.user.username} on {self.date_provided}"

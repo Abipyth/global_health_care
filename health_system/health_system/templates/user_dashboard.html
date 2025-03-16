@@ -132,6 +132,72 @@
                 }
             });
         </script>
+
+       <!-----------------Chart from Wellness Coach Feedback------------>
+<h3>Wellness Coach Feedback</h3>
+
+<!-- BMI Feedback with Ratings -->
+<h4>BMI Feedback Ratings</h4>
+<canvas id="bmiFeedbackChart" style="max-height: 300px;"></canvas>
+
+<script>
+    var ctx = document.getElementById('bmiFeedbackChart').getContext('2d');
+    var bmiFeedbackChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ feedback_dates|safe }},  // ✅ Using correct feedback_dates
+            datasets: [{
+                label: 'Coach Ratings',
+                data: {{ coach_ratings|safe }},  // ✅ Using correct coach_ratings
+                backgroundColor: ['#FF6384', '#FFCE56', '#4BC0C0', '#36A2EB'],
+                borderColor: '#333',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 5  // Assuming ratings are out of 5
+                }
+            }
+        }
+    });
+</script>
+
+<!-- Personalized Recommendations -->
+<h4>Your Wellness Recommendations</h4>
+<ul>
+    {% for feedback in coach_feedbacks %}
+        <li>
+            <strong>{{ feedback.date_provided|date:"Y-m-d" }}</strong> - 
+            {{ feedback.recommendation }}
+        </li>
+    {% empty %}
+        <li>No feedback available.</li>
+    {% endfor %}
+</ul>
+
+<!-- Detailed BMI Feedback Section -->
+<h4>BMI Feedback Details</h4>
+<ul>
+    {% for feedback in coach_feedbacks %}
+        <li>
+            <strong>{{ feedback.date_provided|date:"Y-m-d" }}</strong> - 
+            BMI: <strong>{{ feedback.bmi_update.bmi }}</strong> 
+            ({{ feedback.bmi_update.bmi_category }})
+            <ul>
+                <li><strong>Coach:</strong> {{ feedback.coach.username }}</li>
+                <li><strong>Rating:</strong> {{ feedback.get_rating_display }}</li>
+                <li><strong>Recommendation:</strong> {{ feedback.recommendation }}</li>
+            </ul>
+        </li>
+    {% empty %}
+        <li>No feedback yet.</li>
+    {% endfor %}
+</ul>
+
     
         <h3>BMI Updates</h3>
         <a href="{% url 'update_bmi' %}">Update Height & Weight</a>

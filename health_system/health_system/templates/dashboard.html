@@ -63,8 +63,6 @@
     
     <nav>
         <ul>
-            
-    
             {% if user.groups.all.0.name == "End User" %}
             <li><a href="{% url 'dashboard' %}">Home</a></li>
                 <li><a href="{% url 'add_food_log' %}">Add Food Log</a></li>

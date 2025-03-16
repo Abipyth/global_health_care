@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 import json
 from django.utils.timezone import localtime
 from django.contrib.auth.models import User, Group
-from .models import UserProfile, WellnessCoach, DailyFoodLog, WeeklyUpdate, UserQuery
+from .models import UserProfile, WellnessCoach, DailyFoodLog, WeeklyUpdate, UserQuery,WellnessCoachFeedback
 from django.contrib.auth.decorators import login_required
 from .forms import DailyFoodLogForm, WeeklyUpdateForm, UserQueryForm
 # User Registration (End User)
@@ -78,9 +78,10 @@ def dashboard(request):
     if request.user.groups.filter(name="Admin").exists():
         return render(request, 'admin_dashboard.html')
     elif request.user.groups.filter(name="Wellness Coach").exists():
-        users = UserProfile.objects.all()
-        queries = UserQuery.objects.filter(response__isnull=True)  # Unanswered queries
-        return render(request, 'coach_dashboard.html', {'users': users, 'queries': queries})
+        # users = UserProfile.objects.all()
+        # queries = UserQuery.objects.filter(response__isnull=True)  # Unanswered queries
+        # return render(request, 'coach_dashboard.html', {'users': users, 'queries': queries})
+        pass   ###  we currently redirecting wellness coach to review_queries
     # elif request.user.groups.filter(name="End User").exists():
     #     food_logs = DailyFoodLog.objects.filter(user__user=request.user)
     #     bmi_updates = WeeklyUpdate.objects.filter(user__user=request.user)
@@ -122,6 +123,12 @@ def dashboard(request):
             if latest_bmi.bmi_category in ["Underweight", "Overweight", "Obese"]:
                 bmi_alert = "⚠️ Your BMI is in the " + latest_bmi.bmi_category + " range. Please consult a wellness coach!"
 
+
+        # ✅ Fetch wellness coach feedback
+        coach_feedbacks = request.user.user_feedbacks.all()
+        coach_ratings = [feedback.rating for feedback in coach_feedbacks]
+        feedback_dates = [feedback.bmi_update.date.strftime("%Y-%m-%d") for feedback in coach_feedbacks]
+
         return render(request, 'user_dashboard.html', {
             'food_logs': food_logs,
             'bmi_updates': bmi_updates,
@@ -133,6 +140,10 @@ def dashboard(request):
             'bmi_status': bmi_status,
             'bmi_alert': bmi_alert,
              'queries': queries,  # ✅ Pass queries to user_dashboard.html
+             
+             "coach_feedbacks": coach_feedbacks,
+            "coach_ratings": coach_ratings,
+           "feedback_dates": json.dumps(feedback_dates),
         })
 
     return render(request, 'login.html')
@@ -187,6 +198,7 @@ def ask_query(request):
 def review_queries(request):
     if request.user.groups.filter(name="Wellness Coach").exists():  
         if request.method == "POST":
+            ###  only for queries
             query_id = request.POST.get('query_id')
             response_text = request.POST.get('response')
             
@@ -197,16 +209,41 @@ def review_queries(request):
                     query.save()
                 except UserQuery.DoesNotExist:
                     pass
+            ####   for reviw BMI and FOOD lOG of end user
+            
+            bmi_update_id = request.POST.get("bmi_update_id")
+            rating = request.POST.get("rating")
+            recommendation = request.POST.get("recommendation")
+            
+            if bmi_update_id and rating and recommendation:
+                update = WeeklyUpdate.objects.get(id=bmi_update_id)
+                WellnessCoachFeedback.objects.create(
+                    coach=request.user,
+                    user=update.user.user,
+                    bmi_update=update,
+                    rating=rating,
+                    recommendation=recommendation
+                )
 
             return redirect('review_queries')
 
-        # Fetch queries (both answered and unanswered)
+        # Fetch queries (both answered and unanswered)  for queries
         unanswered_queries = UserQuery.objects.filter(response__isnull=True)
         answered_queries = UserQuery.objects.filter(response__isnull=False)
-
+        
+                # Fetch user data  for BMI NAD FOOD LOG FEEDBACK
+        bmi_updates = WeeklyUpdate.objects.all().order_by("-date")
+        coach_feedbacks = WellnessCoachFeedback.objects.filter(coach=request.user)
+        
+                # Extract unique users from bmi_updates
+        unique_users = set(bmi_updates.values_list('user__user', flat=True))  # ✅ Fix: Access `user__user`
+        users = User.objects.filter(id__in=unique_users)
         return render(request, 'review_queries.html', {
             'unanswered_queries': unanswered_queries,
-            'answered_queries': answered_queries
+            'answered_queries': answered_queries,
+            "bmi_updates": bmi_updates,
+            "coach_feedbacks": coach_feedbacks,
+            "users": users,
         })
 
     return redirect('dashboard')
