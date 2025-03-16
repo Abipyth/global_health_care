@@ -13,6 +13,7 @@ urlpatterns = [
     
         # Coach Actions
     path('review_queries/', views.review_queries, name='review_queries'),
+    path('review_bmi_feedback/', views.review_bmi_feedback, name='review_bmi_feedback'),
     
     path('register/', views.register_user, name='register'),
     path('register_coach/', views.register_coach, name='register_coach'),

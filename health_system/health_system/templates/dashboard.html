@@ -70,6 +70,7 @@
                 <li><a href="{% url 'ask_query' %}">Ask a Query</a></li>
             {% elif user.groups.all.0.name == "Wellness Coach" %}
                 <li><a href="{% url 'review_queries' %}">Review Queries</a></li>
+                <li><a href="{% url 'review_bmi_feedback' %}">Review BMI Feedback</a></li>
             {% endif %}
     
             <li><a href="{% url 'logout' %}" class="logout">Logout</a></li>

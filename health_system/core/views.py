@@ -198,7 +198,7 @@ def ask_query(request):
 def review_queries(request):
     if request.user.groups.filter(name="Wellness Coach").exists():  
         if request.method == "POST":
-            ###  only for queries
+            ###  Handling User Queries
             query_id = request.POST.get('query_id')
             response_text = request.POST.get('response')
             
@@ -209,8 +209,23 @@ def review_queries(request):
                     query.save()
                 except UserQuery.DoesNotExist:
                     pass
-            ####   for reviw BMI and FOOD lOG of end user
-            
+
+        # Fetch user queries
+        unanswered_queries = UserQuery.objects.filter(response__isnull=True)
+        answered_queries = UserQuery.objects.filter(response__isnull=False)
+
+        return render(request, 'review_queries.html', {
+            'unanswered_queries': unanswered_queries,
+            'answered_queries': answered_queries,
+        })
+
+    return redirect('dashboard')
+
+@login_required
+def review_bmi_feedback(request):
+    if request.user.groups.filter(name="Wellness Coach").exists():  
+        if request.method == "POST":
+            ###  Handling BMI and Food Log Feedback
             bmi_update_id = request.POST.get("bmi_update_id")
             rating = request.POST.get("rating")
             recommendation = request.POST.get("recommendation")
@@ -219,32 +234,24 @@ def review_queries(request):
                 update = WeeklyUpdate.objects.get(id=bmi_update_id)
                 WellnessCoachFeedback.objects.create(
                     coach=request.user,
-                    user=update.user.user,
+                    user=update.user.user,  # ✅ Fix: Access correct user
                     bmi_update=update,
                     rating=rating,
                     recommendation=recommendation
                 )
 
-            return redirect('review_queries')
-
-        # Fetch queries (both answered and unanswered)  for queries
-        unanswered_queries = UserQuery.objects.filter(response__isnull=True)
-        answered_queries = UserQuery.objects.filter(response__isnull=False)
-        
-                # Fetch user data  for BMI NAD FOOD LOG FEEDBACK
+        # Fetch user data for BMI and Food Log Feedback
         bmi_updates = WeeklyUpdate.objects.all().order_by("-date")
         coach_feedbacks = WellnessCoachFeedback.objects.filter(coach=request.user)
-        
-                # Extract unique users from bmi_updates
-        unique_users = set(bmi_updates.values_list('user__user', flat=True))  # ✅ Fix: Access `user__user`
+
+        # Extract unique users from BMI updates
+        unique_users = set(bmi_updates.values_list('user__user', flat=True))
         users = User.objects.filter(id__in=unique_users)
-        return render(request, 'review_queries.html', {
-            'unanswered_queries': unanswered_queries,
-            'answered_queries': answered_queries,
+
+        return render(request, 'review_bmi_feedback.html', {
             "bmi_updates": bmi_updates,
             "coach_feedbacks": coach_feedbacks,
             "users": users,
         })
 
     return redirect('dashboard')
-

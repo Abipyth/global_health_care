@@ -50,7 +50,6 @@
         margin-top: 5px;
     }
 </style>
-
 <!-- 🔹 Section: Review User Queries -->
 <div class="query-container">
     <h2>Review User Queries</h2>
@@ -89,67 +88,5 @@
         <p>No past responses.</p>
     {% endif %}
 </div>
-
-<!------------------------review BMI and FOOD log of end user------------>
-<!-- 🔹 Section: Review User Data & Provide Feedback -->
-<div class="feedback-container">
-    <h2>Review User Data & Provide Feedback</h2>
-
-    {% for user in users %}
-        <div class="user-feedback">
-            <h3>User: {{ user.username }}</h3>
-            {% for update in bmi_updates %}
-            {% if update.user.user.id == user.id %}
-                <div class="bmi-entry">
-                    <p><strong>{{ update.date }}</strong> - BMI: <strong>{{ update.bmi }}</strong> ({{ update.bmi_category }})</p>
-
-                    <!-- FORM: Submit Rating & Recommendation -->
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="bmi_update_id" value="{{ update.id }}">
-
-                        <label>Rate Progress:</label>
-                        <select name="rating">
-                            <option value="1">Poor</option>
-                            <option value="2">Average</option>
-                            <option value="3" selected>Good</option>
-                            <option value="4">Excellent</option>
-                        </select>
-
-                        <label>Recommendation:</label>
-                        <select name="recommendation">
-                            <option value="Increase Protein">Increase Protein</option>
-                            <option value="Reduce Sugar">Reduce Sugar</option>
-                            <option value="Improve Hydration">Improve Hydration</option>
-                            <option value="More Vegetables">More Vegetables</option>
-                            <option value="Balanced Diet">Balanced Diet</option>
-                        </select>
-
-                        <button type="submit">Submit Feedback</button>
-                    </form>
-
-                    <!-- Display Previous Feedback (if exists) -->
-                    {% for feedback in coach_feedbacks %}
-                        {% if feedback.bmi_update == update %}
-                            <div class="feedback-list">
-                                <strong>Previous Feedback:</strong> <br>
-                                <strong>Coach:</strong> {{ feedback.coach.username }}<br>
-                                <strong>Rating:</strong> {{ feedback.get_rating_display }}<br>
-                                <strong>Recommendation:</strong> {{ feedback.recommendation }}<br>
-                                <strong>Date:</strong> {{ feedback.date_provided|date:"Y-m-d" }}<br>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-        {% empty %}
-        <p>No users with BMI updates.</p>
-    {% endfor %}
-</div>
-
-
-<a href="{% url 'dashboard' %}">Back to Dashboard</a>
 
 {% endblock %}
