@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #e3f2fd;
+            text-align: center;
+            padding-top: 40px;
+        }
+        h2 {
+            color: #0d47a1;
+        }
+        h3 {
+            color: #1976d2;
+            margin-bottom: 20px;
+        }
+        .links {
+            margin-top: 20px;
+        }
+        a {
+            background: #1565c0;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px;
+            font-size: 16px;
+        }
+        a:hover {
+            background: #0d47a1;
+        }
+        .logout {
+            background: red;
+        }
+        .logout:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome, Admin!</h2>
+    <h3>Manage Users and Coaches</h3>
+    <div class="links">
+        <a href="/admin/">Go to Admin Panel</a>
+        <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </div>
+</body>
+</html>

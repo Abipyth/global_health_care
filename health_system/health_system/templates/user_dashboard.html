@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        h3 {
+            color: #555;
+            margin-top: 30px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        canvas {
+            max-width: 100%;
+        }
+        a {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        a:hover {
+            background: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background: #e3f2fd;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .logout {
+            background: red;
+        }
+        .logout:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome, {{ user.username }}!</h2>
+    
+        {% if bmi_status %}
+            <h3 style="color: green;">{{ bmi_status }}</h3>
+        {% endif %}
+        
+        {% if bmi_alert %}
+            <p style="color: red; font-weight: bold;">{{ bmi_alert }}</p>
+        {% endif %}
+    
+        <h3>Your BMI Trend</h3>
+        <div style="max-width: 600px; margin: auto;">
+            <canvas id="bmiChart" style="max-height: 300px;"></canvas>
+        </div>
+        
+    
+        <script>
+            var ctx = document.getElementById('bmiChart').getContext('2d');
+            var bmiChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ dates|safe }},  // Dates as labels
+                    datasets: [{
+                        label: 'BMI',
+                        data: {{ bmi_values|safe }},  // BMI values
+                        borderColor: 'blue',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        </script>
+
+        <!-- Food Log Chart -->
+        <h3>Your Food Log Counts by Time of Day</h3>
+        <div style="max-width: 600px; margin: auto;">
+            <canvas id="foodLogChart" style="max-height: 300px;"></canvas>
+        </div>
+
+        <script>
+            var ctx2 = document.getElementById('foodLogChart').getContext('2d');
+            var foodLogChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: {{ food_log_times|safe }},
+                    datasets: [{
+                        label: 'Food Log Count',
+                        data: {{ food_log_counts|safe }},
+                        backgroundColor: 'orange',
+                        borderColor: 'orange',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    
+        <h3>BMI Updates</h3>
+        <a href="{% url 'update_bmi' %}">Update Height & Weight</a>
+        <ul>
+            {% for update in bmi_updates %}
+                <li><strong>{{ update.date }}</strong> - Height: {{ update.height }} cm, Weight: {{ update.weight }} kg, BMI: {{ update.bmi }} ({{ update.bmi_category }})</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Daily Food Logs</h3>
+        <a href="{% url 'add_food_log' %}">Log Your Meal</a>
+        <ul>
+            {% for log in food_logs %}
+                <li><strong>{{ log.date }} - {{ log.time }}</strong>: {{ log.food_description }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Health Queries</h3>
+        <a href="{% url 'ask_query' %}">Ask a Question</a>
+        
+        <!-- Pending Queries -->
+        {% if queries|dictsortreversed:"id" %}
+            <h4>Pending Queries</h4>
+            <ul>
+                {% for query in queries %}
+                    {% if not query.response %}
+                        <li><strong>{{ query.query_text }}</strong> - <span style="color: red;">Pending</span></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No pending queries.</p>
+        {% endif %}
+        
+        <!-- Answered Queries -->
+        {% if queries %}
+            <h4>Answered Queries</h4>
+            <ul>
+                {% for query in queries %}
+                    {% if query.response %}
+                        <li>
+                            <strong>{{ query.query_text }}</strong> <br>
+                            <span style="color: green;"><strong>Response:</strong> {{ query.response }}</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No answered queries yet.</p>
+        {% endif %}
+
+        <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </div>
+</body>
+</html>

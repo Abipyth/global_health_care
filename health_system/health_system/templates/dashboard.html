@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            text-align: center;
+            padding-top: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        nav {
+            background: #007bff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        .content {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .logout {
+            background: red;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .logout:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome, {{ user.username }}!</h2>
+    
+    <nav>
+        <ul>
+            
+    
+            {% if user.groups.all.0.name == "End User" %}
+            <li><a href="{% url 'dashboard' %}">Home</a></li>
+                <li><a href="{% url 'add_food_log' %}">Add Food Log</a></li>
+                <li><a href="{% url 'update_bmi' %}">Update BMI</a></li>
+                <li><a href="{% url 'ask_query' %}">Ask a Query</a></li>
+            {% elif user.groups.all.0.name == "Wellness Coach" %}
+                <li><a href="{% url 'review_queries' %}">Review Queries</a></li>
+            {% endif %}
+    
+            <li><a href="{% url 'logout' %}" class="logout">Logout</a></li>
+        </ul>
+    </nav>
+    
+
+    <div class="content">
+        {% block content %}
+        <p>Select an option from the menu.</p>
+        {% endblock %}
+    </div>
+
+</body>
+</html>

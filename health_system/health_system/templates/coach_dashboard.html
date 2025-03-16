@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coach Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4c3;
+            text-align: center;
+            padding-top: 30px;
+        }
+        h2 {
+            color: #33691e;
+        }
+        h3 {
+            color: #558b2f;
+            margin-bottom: 20px;
+        }
+        form {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #2e7d32;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #1b5e20;
+        }
+        .logout {
+            background: red;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        .logout:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome, {{ user.username }}!</h2>
+    <h3>Pending User Queries</h3>
+    <form method="post">
+        {% csrf_token %}
+        <ul>
+            {% for query in queries %}
+                <li>
+                    <strong>{{ query.user.user.username }}</strong> - {{ query.query_text }}<br>
+                    <input type="hidden" name="query_id" value="{{ query.id }}">
+                    <input type="text" name="response" placeholder="Enter response">
+                    <button type="submit">Submit</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </form>
+    
+    <h3>Query History</h3>
+    <ul>
+        {% for query in queries %}
+            {% if query.response %}
+                <li>
+                    <strong>{{ query.user.user.username }}</strong>: {{ query.query_text }}<br>
+                    <p><strong>Response:</strong> {{ query.response }}</p>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    
+    <a href="{% url 'logout' %}" class="logout">Logout</a>
+</body>
+</html>

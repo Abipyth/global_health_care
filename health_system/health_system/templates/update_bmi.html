@@ -1,0 +1,39 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<style>
+    form {
+        max-width: 400px;
+        margin: auto;
+        padding: 20px;
+        background: #f1f1f1;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    input {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background: #007bff;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 5px;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+</style>
+<h2>Update BMI</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save BMI Update</button>
+</form>
+<a href="{% url 'dashboard' %}">Back to Dashboard</a>
+{% endblock %}
